@@ -1,60 +1,56 @@
 import random
+from typing import List, Tuple
 
-def generer_code_couleurs():
+COULEURS_VALIDES = ['R', 'J', 'V', 'B', 'N', 'D']
+
+def generer_code_couleurs() -> List[str]:
     """
-    Génère un code secret de 4 couleurs parmi R, J, V, B, N, D (Rouge, Jaune, Vert, Bleu, Noir, Doré).
+    Génère un code secret de 4 couleurs parmi les couleurs valides.
     
     Returns:
-    list: Une liste de 4 couleurs aléatoires.
+    List[str]: Une liste de 4 couleurs aléatoires.
     """
-    couleurs = ['R', 'J', 'V', 'B', 'N', 'D']
-    return [random.choice(couleurs) for _ in range(4)]
+    return [random.choice(COULEURS_VALIDES) for _ in range(4)]
 
-def verifier_proposition(code_secret, proposition):
+def verifier_proposition(code_secret: List[str], proposition: List[str]) -> Tuple[int, int]:
     """
     Vérifie la proposition du joueur par rapport au code secret.
     
     Args:
-    code_secret (list): Le code secret généré.
-    proposition (list): La proposition du joueur.
+    code_secret (List[str]): Le code secret généré.
+    proposition (List[str]): La proposition du joueur.
     
     Returns:
-    tuple: (nombre de pions bien placés, nombre de pions de bonne couleur mais mal placés)
+    Tuple[int, int]: (nombre de pions bien placés, nombre de pions de bonne couleur mais mal placés)
     """
-    bien_places = 0
-    mal_places = 0
-    code_temp = code_secret.copy()
-    proposition_temp = proposition.copy()
-
-    # Vérification des bien placés
-    for i in range(len(proposition)):
-        if proposition[i] == code_temp[i]:
-            bien_places += 1
-            code_temp[i] = proposition_temp[i] = None
-
-    # Vérification des mal placés
-    for i in range(len(proposition_temp)):
-        if proposition_temp[i] and proposition_temp[i] in code_temp:
-            mal_places += 1
-            code_temp[code_temp.index(proposition_temp[i])] = None
+    bien_places = sum(1 for i in range(len(proposition)) if proposition[i] == code_secret[i])
+    
+    # Compter les occurrences de chaque couleur dans le code secret et la proposition
+    code_count = {couleur: code_secret.count(couleur) for couleur in COULEURS_VALIDES}
+    proposition_count = {couleur: proposition.count(couleur) for couleur in COULEURS_VALIDES}
+    
+    mal_places = sum(min(code_count[couleur], proposition_count[couleur]) for couleur in COULEURS_VALIDES)
+    
+    # Enlever les bien placés des mal placés
+    mal_places -= bien_places
 
     return bien_places, mal_places
 
-def demander_proposition():
+def demander_proposition() -> List[str]:
     """
     Demande une proposition au joueur.
     
     Returns:
-    list: La proposition du joueur sous forme de liste de couleurs.
+    List[str]: La proposition du joueur sous forme de liste de couleurs.
     """
     while True:
         proposition = input("Entrez une combinaison de couleurs (R J V B N D) avec un espace entre chaque : ").strip().upper().split()
-        if len(proposition) == 4 and all(c in ['R', 'J', 'V', 'B', 'N', 'D'] for c in proposition):
+        if len(proposition) == 4 and all(c in COULEURS_VALIDES for c in proposition):
             return proposition
         else:
             print("Entrée invalide. Assurez-vous d'entrer exactement 4 couleurs parmi R, J, V, B, N, D.")
 
-def jouer():
+def jouer() -> None:
     """
     Lance le jeu de Mastermind.
     """
@@ -62,8 +58,8 @@ def jouer():
     essais = 12
     print("Bienvenue au Mastermind ! Vous avez 12 essais pour deviner le code secret.")
 
-    while essais > 0:
-        print(f"Essai {13 - essais} sur 12")
+    for essai in range(1, essais + 1):
+        print(f"Essai {essai} sur {essais}")
         proposition = demander_proposition()
         bien_places, mal_places = verifier_proposition(code_secret, proposition)
         
@@ -73,9 +69,19 @@ def jouer():
 
         print(f"{bien_places} pions de bonne couleur à la bonne place")
         print(f"{mal_places} pions de bonne couleur")
-        essais -= 1
-
+        
     print("Dommage, vous avez épuisé tous vos essais. Le code secret était :", " ".join(code_secret))
 
+def jouer_nouveau() -> None:
+    """
+    Fonction pour lancer une nouvelle partie ou quitter le jeu.
+    """
+    while True:
+        jouer()
+        rejouer = input("Voulez-vous jouer une nouvelle partie ? (O/N) : ").strip().upper()
+        if rejouer != 'O':
+            print("Merci d'avoir joué !")
+            break
+
 if __name__ == "__main__":
-    jouer()
+    jouer_nouveau()
