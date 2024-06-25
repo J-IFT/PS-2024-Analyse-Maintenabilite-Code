@@ -8,3 +8,22 @@ d'entrer les valeurs de a et b, puis affiche l'état du système basé sur ces v
 
 Fonctionnement du code :
 
+Fonction system_state(a, b) :
+    Utilise la fonction random.random() pour générer un nombre aléatoire entre 0 et 1.
+    Si ce nombre est supérieur à 0.5 :
+    Si a est supérieur à 10 et b est inférieur à 5, la fonction retourne "ouvert".
+    Sinon, elle retourne "fermé".
+    Si le nombre est inférieur ou égal à 0.5, la fonction retourne "ouvert".
+Bloc principal :
+    Demande à l'utilisateur d'entrer les valeurs de a et b.
+    Appelle la fonction system_state(a, b) et affiche le résultat.
+
+Points Problématiques et d'Amélioration :
+Comportement Aléatoire :
+    Le comportement aléatoire introduit de l'incertitude, rendant les tests et le débogage difficiles.
+    Il n'est pas clair pourquoi le système devrait être "ouvert" 50 % du temps indépendamment des valeurs de a et b.
+Clarté de la Logique :
+La logique conditionnelle pourrait être simplifiée ou mieux expliquée pour être plus claire.
+Entrée Utilisateur Non Validée :
+Il n'y a aucune validation des entrées de l'utilisateur pour s'assurer que a et b sont des entiers valides.
+
