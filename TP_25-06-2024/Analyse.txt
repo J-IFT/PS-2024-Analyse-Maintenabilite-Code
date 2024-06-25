@@ -1,0 +1,10 @@
+Analyse du code (programme_incoherent.py) :
+
+Description du code :
+
+Le code implémente une fonction system_state(a, b) qui détermine l'état d'un système (ouvert ou fermé) 
+en fonction de deux variables a et b, et d'un tirage aléatoire. Le script principal demande à l'utilisateur 
+d'entrer les valeurs de a et b, puis affiche l'état du système basé sur ces valeurs et le résultat aléatoire.
+
+Fonctionnement du code :
+
