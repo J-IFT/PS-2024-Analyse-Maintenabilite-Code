@@ -38,4 +38,3 @@ def fibonacci_iteratif(nombre: int) -> int:
 
 # Exemple d'utilisation pour tester la fonction
 print(fibonacci_iteratif(10))  # Devrait afficher 34, le 10ème nombre de Fibonacci
-
