@@ -39,4 +39,4 @@ def fibonacci(nombre: int, memo=None) -> int:
         return "Erreur : Le paramètre 'nombre' doit être un entier positif."
 
 # Exemple d'utilisation
-print(fibonacci(-10))
+print(fibonacci(100))

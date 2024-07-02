@@ -1,6 +1,11 @@
 """ Module : Traitement d'images """
 
 try:
+    import numpy as np
+except ImportError as import_exception:
+    raise ImportError("La bibliothèque OpenCV (cv2) n'est pas installée. Veuillez l'installer avant d'exécuter cette fonction.") from import_exception
+
+try:
     import cv2
 except ImportError as import_exception:
     raise ImportError("La bibliothèque OpenCV (cv2) n'est pas installée. Veuillez l'installer avant d'exécuter cette fonction.") from import_exception
@@ -74,22 +79,35 @@ def threshold(image_to_threshold, threshold=127):
     Applique un seuillage sur une image en convertissant chaque pixel en noir ou blanc en fonction d'un seuil spécifié.
 
     Paramètres:
-    image_to_threshold: L'image à seuiller, sous forme d'un tableau numpy à 2 dimensions.
+    image_to_threshold: L'image à seuiller, sous forme d'un tableau numpy à 2 dimensions ou 3 dimensions.
     threshold (int): Valeur seuil (0-255). Les pixels avec une valeur supérieure à ce seuil seront convertis en 255 (blanc),
                      ceux avec une valeur inférieure ou égale seront convertis en 0 (noir).
 
     Retourne:
-    image: L'image seuillée avec des pixels noirs (0) et blancs (255). Retourne None si une erreur survient pendant le seuillage.
+    np.ndarray: L'image seuillée avec des pixels noirs (0) et blancs (255). Retourne None si une erreur survient pendant le seuillage.
     """
     try:
-        height, width = image_to_threshold.shape
-        for i in range(height):
-            for j in range(width):
-                if image_to_threshold[i, j] > threshold:
-                    image_to_threshold[i, j] = 255
-                else:
-                    image_to_threshold[i, j] = 0
+        if np.ndim(image_to_threshold) == 2:  # Image en niveaux de gris
+            height, width = image_to_threshold.shape
+            for i in range(height):
+                for j in range(width):
+                    if image_to_threshold[i, j] > threshold:
+                        image_to_threshold[i, j] = 255
+                    else:
+                        image_to_threshold[i, j] = 0
+        elif np.ndim(image_to_threshold) == 3:  # Image en couleur
+            height, width, _ = image_to_threshold.shape
+            for i in range(height):
+                for j in range(width):
+                    if np.mean(image_to_threshold[i, j]) > threshold:
+                        image_to_threshold[i, j] = [255, 255, 255]
+                    else:
+                        image_to_threshold[i, j] = [0, 0, 0]
+        else:
+            raise ValueError("Format d'image non pris en charge : doit être 2D (niveaux de gris) ou 3D (couleur).")
+
         return image_to_threshold
+
     except Exception as threshold_exception:
         raise ImageThresholdError(f"Erreur lors de l'application du seuil sur l'image : {threshold_exception}") from threshold_exception
 
