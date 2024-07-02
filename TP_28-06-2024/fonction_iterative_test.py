@@ -1,7 +1,7 @@
 """Module : Fibonacci Tests """
 
 import unittest
-from fonction_iterative_ameliorations import fibonacci_iteratif  
+from fonction_iterative_ameliorations import fibonacci_iteratif
 
 class TestFibonacciIteratif(unittest.TestCase):
     """
