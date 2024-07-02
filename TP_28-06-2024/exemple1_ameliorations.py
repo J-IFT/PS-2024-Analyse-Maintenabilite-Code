@@ -3,7 +3,7 @@
 try:
     import numpy as np
 except ImportError as import_exception:
-    raise ImportError("La bibliothèque OpenCV (cv2) n'est pas installée. Veuillez l'installer avant d'exécuter cette fonction.") from import_exception
+    raise ImportError("La bibliothèque Numpy n'est pas installée. Veuillez l'installer avant d'exécuter cette fonction.") from import_exception
 
 try:
     import cv2
@@ -21,107 +21,94 @@ class ImageThresholdError(Exception):
     """Exception levée lorsque l'application du seuil sur l'image échoue."""
 
 
-def load(load_path: str) -> object:
+def load(load_path: str) -> np.ndarray:
     """
     Charge une image à partir de son path.
 
-    Paramètre:
-    path (str): Chemin de l'image a charger.
+    Paramètres :
+    load_path (str): Chemin de l'image à charger.
 
-    Retourne:
-    image: image sous forme d'objet.
-    """
-    loaded_image = cv2.imread(load_path)
-    if loaded_image is None:
-        raise ImageLoadError(f"Erreur lors du chargement de l'image : {load_path}")
-    return loaded_image
-
-def convert(image_to_convert):
-    """
-    Convertit une image en nuances de gris en calculant la moyenne des valeurs
-    des canaux R, G et B pour chaque pixel et en les assignant à chaque canal.
-
-    Paramètres:
-    image_to_convert : L'image à convertir, sous forme d'un tableau numpy à 3 dimensions.
-
-    Retourne:
-    image: L'image convertie en nuances de gris. Retourne None si une erreur survient pendant la conversion.
+    Retourne :
+    np.ndarray: L'image chargée sous forme d'un tableau numpy.
+    
+    Lève :
+    ImageLoadError: Si le chargement de l'image échoue.
     """
     try:
-        height, width, _ = image_to_convert.shape
-        for i in range(height):
-            for j in range(width):
-                gray_value = (int(image_to_convert[i, j, 0]) + int(image_to_convert[i, j, 1]) + int(image_to_convert[i, j, 2])) // 3
-                image_to_convert[i, j] = [gray_value, gray_value, gray_value]
-        return image_to_convert
-    except Exception as convert_exception:
-        raise ImageConvertError(f"Erreur lors de la conversion de l'image : {convert_exception}") from convert_exception
+        loaded_image = cv2.imread(load_path)
+        if loaded_image is None:
+            raise ImageLoadError(f"Erreur lors du chargement de l'image : {load_path}")
+        return loaded_image
+    except Exception as e:
+        raise ImageLoadError(f"Erreur lors du chargement de l'image : {str(e)}") from e
 
-def blur(image_to_blur, kernel_size=(5, 5)):
+def convert(image_to_convert: np.ndarray) -> np.ndarray:
     """
-    Applique un flu gaussien à l'image donnée
+    Convertit une image en nuances de gris.
 
-    Paramètre:
-    image_to_blur: image sous forme d'objet.
-    kernel_size: 
+    Paramètres :
+    image_to_convert (np.ndarray): L'image à convertir, tableau numpy à 3 dimensions.
 
-    Retourne:
-    image: image fl.
-    """
-    try:
-        blurred_image = cv2.GaussianBlur(image_to_blur, kernel_size, 0)
-        return blurred_image
-    except Exception as blur_exception:
-        raise ImageBlurError(f"Erreur lors de l'application du flou gaussien : {blur_exception}") from blur_exception
+    Retourne :
+    np.ndarray: L'image convertie en nuances de gris.
 
-def threshold(image_to_threshold, threshold=127):
-    """
-    Applique un seuillage sur une image en convertissant chaque pixel en noir ou blanc en fonction d'un seuil spécifié.
-
-    Paramètres:
-    image_to_threshold: L'image à seuiller, sous forme d'un tableau numpy à 2 dimensions ou 3 dimensions.
-    threshold (int): Valeur seuil (0-255). Les pixels avec une valeur supérieure à ce seuil seront convertis en 255 (blanc),
-                     ceux avec une valeur inférieure ou égale seront convertis en 0 (noir).
-
-    Retourne:
-    np.ndarray: L'image seuillée avec des pixels noirs (0) et blancs (255). Retourne None si une erreur survient pendant le seuillage.
+    Lève :
+    ImageConvertError: Si la conversion échoue.
     """
     try:
-        if np.ndim(image_to_threshold) == 2:  # Image en niveaux de gris
-            height, width = image_to_threshold.shape
-            for i in range(height):
-                for j in range(width):
-                    if image_to_threshold[i, j] > threshold:
-                        image_to_threshold[i, j] = 255
-                    else:
-                        image_to_threshold[i, j] = 0
-        elif np.ndim(image_to_threshold) == 3:  # Image en couleur
-            height, width, _ = image_to_threshold.shape
-            for i in range(height):
-                for j in range(width):
-                    if np.mean(image_to_threshold[i, j]) > threshold:
-                        image_to_threshold[i, j] = [255, 255, 255]
-                    else:
-                        image_to_threshold[i, j] = [0, 0, 0]
+        gray_image = cv2.cvtColor(image_to_convert, cv2.COLOR_BGR2GRAY)
+        return cv2.cvtColor(gray_image, cv2.COLOR_GRAY2BGR)
+    except Exception as e:
+        raise ImageConvertError(f"Erreur lors de la conversion de l'image : {str(e)}") from e
+
+def threshold(image_to_threshold: np.ndarray, threshold=127) -> np.ndarray:
+    """
+    Applique un seuillage à une image.
+
+    Paramètres :
+    image_to_threshold (np.ndarray): L'image à seuiller.
+    threshold (int): Valeur de seuil (0-255).
+
+    Retourne :
+    np.ndarray: L'image seuillée.
+
+    Lève :
+    ImageThresholdError: Si l'application du seuil échoue.
+    """
+    try:
+        if image_to_threshold.ndim == 2:  # Image en niveaux de gris
+            _, thresholded_image = cv2.threshold(image_to_threshold, threshold, 255, cv2.THRESH_BINARY)
+            return thresholded_image
+        elif image_to_threshold.ndim == 3:  # Image en couleur
+            gray_image = cv2.cvtColor(image_to_threshold, cv2.COLOR_BGR2GRAY)
+            _, thresholded_image = cv2.threshold(gray_image, threshold, 255, cv2.THRESH_BINARY)
+            return cv2.cvtColor(thresholded_image, cv2.COLOR_GRAY2BGR)
         else:
             raise ValueError("Format d'image non pris en charge : doit être 2D (niveaux de gris) ou 3D (couleur).")
+    except Exception as e:
+        raise ImageThresholdError(f"Erreur lors de l'application du seuil sur l'image : {str(e)}") from e
 
-        return image_to_threshold
+def save(image: np.ndarray, output_path: str):
+    """
+    Enregistre une image traitée.
 
-    except Exception as threshold_exception:
-        raise ImageThresholdError(f"Erreur lors de l'application du seuil sur l'image : {threshold_exception}") from threshold_exception
+    Paramètres :
+    image (np.ndarray): L'image à enregistrer.
+    output_path (str): Chemin de sortie pour enregistrer l'image.
 
-def save(image, output_path):
+    Lève :
+    Exception: En cas d'erreur lors de l'enregistrement de l'image.
+    """
     try:
         cv2.imwrite(output_path, image)
         print("Image traitée enregistrée avec succès :", output_path)
     except Exception as e:
         print(f"Erreur {e}")
 
-
-image_path = "example_image.jpg"
-original_image = load(image_path)
-
-image = threshold(convert(blur(original_image)))
-output_path = "processed_image.jpg"
-save(image, output_path)
+# Exemple d'utilisation
+if __name__ == "__main__":
+    image_path = "example_image.jpg"
+    original_image = load(image_path)
+    processed_image = threshold(convert(cv2.GaussianBlur(original_image, (5, 5), 0)))
+    output_path = "processed_image.jpg"
+    save(processed_image, output_path)
